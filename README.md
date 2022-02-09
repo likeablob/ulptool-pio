@@ -19,16 +19,18 @@ extra_scripts =
   post:/$PROJECT_LIBDEPS_DIR/$PIOENV/ulptool-pio/post_extra_script_ulptool.py
 ```
 
-Then build the project twice. The first run is for letting PIO to fetch the dependency and will be ended in failure because of missing `extra_scripts`. But you can safely ignore the errors. The 2nd run will be fine.
-```sh
-$ pio run && pio run
-```
-
-Finally put your ULP asm (`*.s` Note it's not `*.S`) into `ulp/`. You can even use `.c` thanks to `ulpcc`. See the original doc below for details.
+Then put your ULP asm `*.s` (Note it's not `*.S`) into `ulp/`. You can even use `*.c` thanks to `ulpcc`. See the original doc below for details.  
+There are also a couple of example PIO projects available under [./examples](./examples).
 ```sh
 $ mkdir ulp
 $ code ulp/my_ulp_code.s
 ```
+
+Finally build the project twice. The first run is for letting PIO to fetch the dependency and will be ended in failure because of missing `extra_scripts`. But you can safely ignore the errors. The subsequent runs will be fine.
+```sh
+$ pio run && pio run
+```
+
 That's it. Have a fun! :D
 ```sh
 $ pio run -t upload
