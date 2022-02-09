@@ -1,7 +1,7 @@
 {
   "name": "ulptool-pio",
   "version": "0.1.0",
-  "description": "A tiny and ugly wrapper of ulptool. See README for details.",
+  "description": "A thin wrapper of ulptool. See README for details.",
   "keywords": [
     "ulp",
     "ulpcc"
@@ -18,7 +18,13 @@
     "espressif32"
   ],
   "headers": [],
-  "examples": [],
+  "export": {
+    "exclude": [
+      ".venv",
+      ".pio",
+      "examples/*/.vscode"
+    ]
+  },
   "build": {
     "srcFilter": "-<*>"
   }
