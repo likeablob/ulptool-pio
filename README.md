@@ -28,7 +28,7 @@ $ code ulp/my_ulp_code.s
 
 Finally build the project twice. The first run is for letting PIO to fetch the dependency and will be ended in failure because of missing `extra_scripts`. But you can safely ignore the errors. The subsequent runs will be fine.
 ```sh
-$ pio run && pio run
+$ pio run || pio run
 ```
 
 That's it. Have a fun! :D
