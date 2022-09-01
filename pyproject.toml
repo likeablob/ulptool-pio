@@ -1,0 +1,28 @@
+[tool.poetry]
+authors = ["likeablob <46628917+likeablob@users.noreply.github.com>"]
+description = ""
+name = "ulptool-pio"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+SCons = "^4.3.0"
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+black = {version = "^22.1.0", allow-prereleases = true}
+flake8 = "^4.0.1"
+isort = "^5.10.1"
+pyproject-flake8 = "^0.0.1-alpha.2"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+
+[tool.flake8]
+exclude = ".git,__pycache__,docs/source/conf.py,old,build,dist,.venv,.tox"
+extend-ignore = "E203,"
+max-complexity = 10
+max-line-length = 88
+
+[tool.isort]
+profile = "black"

@@ -1,0 +1,25 @@
+{
+  "name": "ulptool-pio",
+  "version": "0.1.0",
+  "description": "A tiny and ugly wrapper of ulptool. See README for details.",
+  "keywords": [
+    "ulp",
+    "ulpcc"
+  ],
+  "homepage": "https://github.com/likeablob/ulptool-pio",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/likeablob/ulptool-pio.git"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "platforms": [
+    "espressif32"
+  ],
+  "headers": [],
+  "examples": [],
+  "build": {
+    "srcFilter": "-<*>"
+  }
+}

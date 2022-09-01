@@ -26,6 +26,7 @@ import hashlib
 import platform
 import argparse
 import subprocess
+import traceback
 
 CPREPROCESSOR_FLAGS = []
 
@@ -90,7 +91,7 @@ def main(argv):
     PATHS['ucompiler'] = args.u
     PATHS['xcompiler'] = args.x
 
-    os.chdir(os.path.join(PATHS['build'], 'sketch'))
+    os.chdir(os.path.join(PATHS['build'], 'ulp'))
 
     gen_assembly(PATHS)
 
@@ -297,11 +298,12 @@ def gen_assembly(PATHS):
             with open(file, "rb") as f:
                 top = f.readline().strip()
                 bottom = f.readlines()[-1].strip()
-                if top.startswith("#ifdef _ULPCC_"):
-                    if bottom.startswith("#endif"):
+                if top.startswith(b"#ifdef _ULPCC_"):
+                    if bottom.startswith(b"#endif"):
                         ulpcc_files.append(file)
 
     except Exception as e:
+        traceback.print_exc()
         print(e)
 
     for file in ulpcc_files:
@@ -312,7 +314,7 @@ def gen_assembly(PATHS):
             error_string = cmd[0] + '\r' + err
             sys.exit(error_string)
         else:
-            if out == "":
+            if out == b"":
                 print(cmd[0])
             else:
                 sys.exit(str(out))
@@ -381,7 +383,7 @@ def gen_xtensa_preprocessor_cmd(PATHS, file, board_options):
     XTENSA_GCC_PREPROCESSOR.extend(CPREPROCESSOR_FLAGS)
     XTENSA_GCC_PREPROCESSOR.extend(board_options)
     XTENSA_GCC_PREPROCESSOR.append(EXTRA_FLAGS['I'])
-    XTENSA_GCC_PREPROCESSOR.append(os.path.join(PATHS['build'], 'sketch'))
+    XTENSA_GCC_PREPROCESSOR.append(os.path.join(PATHS['build'], 'ulp'))
     XTENSA_GCC_PREPROCESSOR.append(EXTRA_FLAGS['D__ASSEMBLER__'])
     XTENSA_GCC_PREPROCESSOR.append(file[0] + '.s')
     STR_CMD = ' '.join(XTENSA_GCC_PREPROCESSOR)
@@ -421,7 +423,7 @@ def gen_xtensa_ld_cmd(PATHS, file, board_options):
     XTENSA_GCC_LD.extend(CPREPROCESSOR_FLAGS)
     XTENSA_GCC_LD.extend(board_options)
     XTENSA_GCC_LD.append(EXTRA_FLAGS['I'])
-    XTENSA_GCC_LD.append(os.path.join(PATHS['build'], 'sketch'))
+    XTENSA_GCC_LD.append(os.path.join(PATHS['build'], 'ulp'))
     XTENSA_GCC_LD.append(EXTRA_FLAGS['D__ASSEMBLER__'])
     XTENSA_GCC_LD.append(os.path.join(PATHS['ulptool'], 'ld', 'esp32.ulp.ld'))
     STR_CMD = ' '.join(XTENSA_GCC_LD)

@@ -1,3 +1,54 @@
+# ulptool-pio
+
+This is a fork of [duff2013/ulptool](https://github.com/duff2013/ulptool), with a thin and ugly wrapper for PlatformIO.
+
+Since, as of writing this, PIO does not support ESP32 ULP under `framework=arduino` ([issue](https://github.com/platformio/platform-espressif32/issues/274)), I wrote this wrapper which integrates ulptool into PIO's build pipelines.
+
+PRs are welcome.
+
+
+## Install
+
+To use this wrapper in your PIO project, first add the following lines into your `platformio.ini`.
+```ini
+lib_deps =
+  https://github.com/likeablob/ulptool-pio
+
+extra_scripts =
+  pre:/$PROJECT_LIBDEPS_DIR/$PIOENV/ulptool-pio/pre_extra_script_ulptool.py
+  post:/$PROJECT_LIBDEPS_DIR/$PIOENV/ulptool-pio/post_extra_script_ulptool.py
+```
+
+Then build the project twice. The first run is for letting PIO to fetch the dependency and will be ended in failure because of missing `extra_scripts`. But you can safely ignore the errors. The 2nd run will be fine.
+```sh
+$ pio run && pio run
+```
+
+Finally put your ULP asm (`*.s` Note it's not `*.S`) into `ulp/`. You can even use `.c` thanks to `ulpcc`. See the original doc below for details.
+```sh
+$ mkdir ulp
+$ code ulp/my_ulp_code.s
+```
+That's it. Have a fun! :D
+```sh
+$ pio run -t upload
+```
+
+
+## Thoughts and ideas
+
+- Talking about the other options, it's possible to use ULP with `framework=espidf`. The framework also has the Arduino-compat layer. (see [espidf-arduino-wifiscan](https://github.com/platformio/platform-espressif32/tree/develop/examples/espidf-arduino-wifiscan))
+  - The major advantage of `ulptool` is that we can avoid writing asm thanks to `ulpcc`.
+- Currently I'm not able to figure out how, but writing a PIO builder would be a clearer solution. [`builder/frameworks/ulp.py`](https://github.com/platformio/platform-espressif32/blob/develop/builder/frameworks/ulp.py) is probably insightful as a reference.
+- Ideas:
+  - [ ] Separate source files and build products in the PIO way. It may require modifying `esp32ulp_build_recipe.py` somehow.
+  - [ ] Mitigate type errors reported by Pylance.
+
+
+**The original README follows.**
+
+---
+
 ulptool v2.4.2
 ==================
 Now Arduino can program the ULP coprocessor for your esp32 projects. The guide below assumes you installed the esp32 core with the preferred method using the board manager.
