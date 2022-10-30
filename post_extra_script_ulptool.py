@@ -18,10 +18,14 @@ ulptool_dir = Path(env["PROJECT_LIBDEPS_DIR"]) / env["PIOENV"] / "ulptool-pio"
 
 def run_ulptool():
     platform = env.PioPlatform()
-
+    board = env.BoardConfig()
+    mcu = board.get("build.mcu", "esp32")
+    
     framework_dir = platform.get_package_dir("framework-arduinoespressif32")
-    toolchain_ulp_dir = platform.get_package_dir("toolchain-esp32ulp")
-    toolchain_xtensa_dir = platform.get_package_dir("toolchain-xtensa32")
+    toolchain_ulp_dir = platform.get_package_dir("toolchain-%sulp" % (mcu))
+    toolchain_xtensa_dir = platform.get_package_dir(
+        "toolchain-%s" % ("xtensa-%s" % mcu)
+    )
 
     cpp_defines = ""
     for raw in env["CPPDEFINES"]:
@@ -47,6 +51,7 @@ def run_ulptool():
         -u {toolchain_ulp_dir}/bin \
         -x {toolchain_xtensa_dir}/bin \
         -t {ulptool_dir}/src/ \
+        -m {mcu} \
         {cpp_defines}
     """
     )
