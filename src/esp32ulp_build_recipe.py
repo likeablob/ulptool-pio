@@ -327,6 +327,7 @@ def gen_lcc_cmd(PATHS, file):
     include_path = os.path.join(PATHS['core'], 'tools', 'sdk', MCU, 'include', 'soc', MCU, 'include')
     common_path = os.path.join(PATHS['core'], 'tools', 'sdk', MCU, 'include', 'esp_common', 'include')
     header_path  = os.path.join(PATHS['ulptool'], 'ulpcc', 'include')
+    own_include_path = os.path.join(PATHS["build"], "include")
     
     if platform.system() == 'Darwin':
         lcc_path = os.path.join(PATHS['ulptool'], 'ulpcc', 'bin', 'darwin')
@@ -340,6 +341,7 @@ def gen_lcc_cmd(PATHS, file):
     LCC.append('-I' + include_path)
     LCC.append('-I' + header_path)
     LCC.append('-I' + common_path)
+    LCC.append("-I" + own_include_path)
     LCC.append('-D_ULPCC_')
     LCC.append('-lccdir=' + lcc_path)
     LCC.append('-Wf-target=ulp')
