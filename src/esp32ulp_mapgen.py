@@ -19,6 +19,8 @@ def gen_ld_h_from_sym(f_sym, f_ld, f_h):
     f_h.write("#pragma once\n\n")
 
     for line in f_sym:
+        if len(line.strip()) == 0:
+            continue
         name, _, addr_str = line.split()
         addr = int(addr_str, 16) + BASE_ADDR
         f_h.write("extern uint32_t ulp_{0};\n".format(name))

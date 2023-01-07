@@ -73,16 +73,16 @@ def main(argv):
     parser.add_argument('-t', action='store')
     parser.add_argument('-m', action='store')
     parser.add_argument('-I', action='append')
+    parser.add_argument('--incfile', action='store')
     args, options = parser.parse_known_args()
 
-    for item in args.I:
-        CPREPROCESSOR_FLAGS.append('-I')
-        CPREPROCESSOR_FLAGS.append(item)
+    if args.I is not None:
+        for item in args.I:
+            CPREPROCESSOR_FLAGS.append('-I')
+            CPREPROCESSOR_FLAGS.append(item)
 
-    board_options = []
-    for item in options:
-        if item.startswith('--'):
-            board_options.append(item[1:])
+    if args.incfile is not None:
+        CPREPROCESSOR_FLAGS.append("@" + str(args.incfile))
 
     PATHS = dict()
     PATHS['build']     = args.b
@@ -98,6 +98,8 @@ def main(argv):
     gen_assembly(PATHS)
 
     ulp_files = glob.glob('*.s')
+    # not needed anymore
+    board_options = []
 
     if not ulp_files:
         sys.stdout.write('No ULP Assembly File(s) Detected...\r')
@@ -140,7 +142,7 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
         proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False)
         (out, err) = proc.communicate()
         if err:
-            error_string = cmd[0] + '\r' + err
+            error_string = cmd[0] + '\r' + err.decode('utf-8')
             sys.exit(error_string)
         else:
             console_string += cmd[0] + '\r'
@@ -150,7 +152,7 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
     proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False)
     (out, err) = proc.communicate()
     if err:
-        error_string = cmd[0] + '\r' + err
+        error_string = cmd[0] + '\r' + err.decode('utf-8')
         sys.exit(error_string)
     else:
         console_string += cmd[0] + '\r'
@@ -160,7 +162,7 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
     proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False)
     (out, err) = proc.communicate()
     if err:
-        error_string = cmd[0] + '\r' + err
+        error_string = cmd[0] + '\r' + err.decode('utf-8')
         sys.exit(error_string)
     else:
         console_string += cmd[0] + '\r'
@@ -170,15 +172,16 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
     proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False)
     (out, err) = proc.communicate()
     if err:
-        error_string = cmd[0] + '\r' + err
+        error_string = cmd[0] + '\r' + err.decode('utf-8')
         sys.exit(error_string)
     else:
         try:
-            file_path = os.path.join(PATHS['core'], 'tools', 'sdk', MCU, 'dio_qspi', 'include', 'config', 'sdkconfig.h' )
-            with open(file_path, "r") as file: text = file.read()
+            out = out.decode('utf-8')
+            file_path = os.path.join(PATHS['core'], 'tools', 'sdk', MCU, 'dio_qspi', 'include', 'sdkconfig.h' )
+            with open(file_path, "r") as file: sdk_text = file.read()
 
-            mem = re.findall(r'#define CONFIG_ULP_COPROC_RESERVE_MEM (.*?)\n', text)[0]
-            SECTIONS = dict(re.findall('^(\.+[0-9a-zA-Z_]+)\s+([0-9]+)', out, re.MULTILINE))
+            mem = re.findall(r'#define CONFIG_ULP_COPROC_RESERVE_MEM (.*?)\n', sdk_text)[0]
+            SECTIONS = dict(re.findall(r'^(\.+[0-9a-zA-Z_]+)\s+([0-9]+)', out, re.MULTILINE))
             max    = 0.0
             text   = 0.0
             data   = 0.0
@@ -190,7 +193,12 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
             ram_precent   = 0.0
 
             try: max = float(mem)
-            except Exception: pass
+            except Exception:
+                # maybe it's a macro name
+                try:
+                    mem = re.findall('#define %s (.*?)\n' % mem, sdk_text)[0]
+                    max = float(mem)
+                except: pass
 
             try: text = float(SECTIONS['.text'])
             except Exception: pass
@@ -220,7 +228,7 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
             flash_msg = "ulp uses %s bytes (%s%%) of program storage space. Maximum is %s bytes.\r" % (int(text), int(flash_precent), int(max - header))
             ram_msg = 'Global variables use %s bytes (%s%%) of dynamic memory, leaving %s bytes for local variables. Maximum is %s bytes.\r' % (int(data+bss), int(ram_precent), int(ram_left), int(max - header))
         except Exception as e:
-            pass
+            flash_msg = "Could not get flash info due to: " + repr(e)
 
         console_string += cmd[0] + '\r'
 
@@ -229,7 +237,7 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
     proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False)
     (out, err) = proc.communicate()
     if err:
-        error_string = cmd[0] + '\r' + err
+        error_string = cmd[0] + '\r' + err.decode('utf-8')
         sys.exit(error_string)
     else:
         file_names_constant = gen_file_names_constant()
@@ -242,7 +250,7 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
     proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False)
     (out, err) = proc.communicate()
     if err:
-        error_string = cmd[0] + '\r' + err
+        error_string = cmd[0] + '\r' + err.decode('utf-8')
         sys.exit(error_string)
     else:
         console_string += cmd[0] + '\r'
@@ -252,7 +260,7 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
     proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False)
     (out, err) = proc.communicate()
     if err:
-        error_string = cmd[0] + '\r' + err
+        error_string = cmd[0] + '\r' + err.decode('utf-8')
         sys.exit(error_string)
     else:
         console_string += cmd[0] + '\r'
@@ -262,7 +270,7 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
     proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False)
     (out, err) = proc.communicate()
     if err:
-        error_string = cmd[0] + '\r' + err
+        error_string = cmd[0] + '\r' + err.decode('utf-8')
         sys.exit(error_string)
     else:
         console_string += cmd[0] + '\r'
@@ -281,13 +289,13 @@ def build_ulp(PATHS, ulp_sfiles, board_options, has_s_file):
         proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,shell=False)
         (out, err) = proc.communicate()
         if err:
-            error_string = cmd[0] + '\r' + err
+            error_string = cmd[0] + '\r' + err.decode('utf-8')
             sys.exit(error_string)
         else:
             console_string += cmd[0] + '\r'
 
     ## print outputs or errors to the console
-    candy = '*********************************************************************************\r'
+    candy = '*********************************************************************************\n'
     if has_s_file:
         print(console_string + candy + flash_msg + ram_msg + candy)
     return 0
@@ -313,7 +321,7 @@ def gen_assembly(PATHS):
         proc = subprocess.Popen(cmd[1],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,shell=False)
         (out, err) = proc.communicate()
         if err:
-            error_string = cmd[0] + '\r' + err
+            error_string = cmd[0] + '\r' + err.decode('utf-8')
             sys.exit(error_string)
         else:
             if out == b"":
@@ -363,7 +371,7 @@ def gen_xtensa_ld_preprocessor_cmd(PATHS):
     XTENSA_GCC_PREPROCESSOR.append(EXTRA_FLAGS['O'])
     XTENSA_GCC_PREPROCESSOR.append(os.path.join(PATHS['core'] , 'tools', 'sdk', 'ld', '%s_out.ld' % MCU))
     XTENSA_GCC_PREPROCESSOR.append(EXTRA_FLAGS['I'])
-    XTENSA_GCC_PREPROCESSOR.append(os.path.join(PATHS['core'] , 'tools', 'sdk', MCU, 'dio_qspi', 'include', 'config'))
+    #XTENSA_GCC_PREPROCESSOR.append(os.path.join(PATHS['core'] , 'tools', 'sdk', MCU, 'dio_qspi', 'include', 'config'))
     XTENSA_GCC_PREPROCESSOR.append(os.path.join(PATHS['core'] , 'tools', 'sdk', 'ld', '%s.ld' % MCU))
     STR_CMD = ' '.join(XTENSA_GCC_PREPROCESSOR)
     return STR_CMD, XTENSA_GCC_PREPROCESSOR
