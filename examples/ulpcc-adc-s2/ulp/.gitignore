@@ -1,0 +1,11 @@
+# Ignore build products
+*.o
+*.d
+*.ld
+*.elf
+*.map
+*.sym
+*.pS
+*.lst
+*.bin
+*.s

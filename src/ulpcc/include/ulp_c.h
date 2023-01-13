@@ -3,7 +3,6 @@
 /* This simplifies what the following headers pull in */
 #define __ASSEMBLER__
 
-#include "soc/rtc_cntl_reg.h"
 #include "soc/rtc_io_reg.h"
 #include "soc_ulp_c.h"
 
